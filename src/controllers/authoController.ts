@@ -3,6 +3,39 @@ import bcrypt from "bcryptjs";
 import { User } from "../model/userModel";
 import { generateToken } from "../utils/tokenGeneration";
 
+
+export const register = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { fullName, email, password, confirmpassword, userRole } = req.body;    
+    if(!fullName || !email || !password || !confirmpassword){
+      res.status(400).json({message:"Please fill all the fields"});
+      return;
+    }
+    if (password !== confirmpassword) {
+      res.status(400).json({ message: "Passwords do not match" });
+      return;
+    }
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      res.status(400).json({ message: "User already exists" });
+      return;
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({
+      fullName,
+      email,
+      password: hashedPassword,
+      confirmpassword: hashedPassword,
+      userRole,
+  });
+  await newUser.save();
+  res.status(201).json({ success: true, message: "User registered successfully", 
+    newUser: {_id: newUser._id, fullName: newUser.fullName, email: newUser.email, userRole: newUser.userRole},
+   token: generateToken(newUser) });
+  } catch (error) {
+    res.status(500).json({ message: "Error registering user", error });
+  }
+};
 export const login = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, password } = req.body;
@@ -29,7 +62,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       message: "Login successful",
       user: {
         id: existingUser._id,
-        username: existingUser.username,
+        fullName: existingUser.fullName,
         email: existingUser.email,
         userRole: existingUser.userRole,
         accessToken: existingUser.accessToken,

@@ -23,8 +23,8 @@ export const requireSignin = async (
     } else {
       throw "Authentication is required";
     }
-  } catch (error) {
-    return res.status(400).json({ message: "Authorization required" });
+  } catch (error : any) {
+    return res.status(400).json({ message: "Authorization required", error: error.message });
   }
 };
 export const checkAdmin = (req: any, res: Response, next: NextFunction) => {

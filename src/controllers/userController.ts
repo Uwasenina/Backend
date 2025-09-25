@@ -7,7 +7,7 @@ import bcrypt from "bcryptjs";
 export const signin = async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(req.body);
-        const { email, password, username,userRole}= req.body;
+        const { email, password, fullName,confirmpassword, userRole}= req.body;
 
 
         const existingUser = await User.findOne({ email });
@@ -16,9 +16,10 @@ export const signin = async (req: Request, res: Response, next: NextFunction) =>
         }
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = new User({
-            username,
+            fullName,
             email,
             password: hashedPassword,
+            confirmpassword:hashedPassword,
             userRole,
             // accessToken: "",
         });
@@ -30,4 +31,42 @@ export const signin = async (req: Request, res: Response, next: NextFunction) =>
     } catch (error: any) {
         return res.status(400).json({message: "Error user not registered", error: error.message});
     }
+    
 }
+export const getUser = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const users = await User.find();    
+        return res.status(200).json({ users });
+    } catch (error: any) {
+        return res.status(500).json({ message: "Error fetching users", error: error.message });
+    }       
+};
+
+export const getUserProfile = async (req: any, res: Response, next: NextFunction) => {
+  try {
+    // `req.user` will be set in your JWT middleware (requireSignin)
+    const userId = req.user?._id;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized - No user ID found" });
+    }
+
+    const user = await User.findById(userId).select("-password -confirmpassword");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.status(200).json({
+      user: {
+        id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        // profileImage: user.profileImage || null, // if you store images
+        userRole: user.userRole,
+        accessToken: user.accessToken,
+      },
+    });
+  } catch (error: any) {
+    return res.status(500).json({ message: "Error fetching profile", error: error.message });
+  }
+};
