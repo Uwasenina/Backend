@@ -5,12 +5,16 @@ import {
   updateCartItem,
   removeCartItem,
 } from "../controllers/cartController";
+import { requireSignin } from "../middleware/authenticationFunction";
 
-const cartRouter = express.Router();
+const router = express.Router();
 
-cartRouter.post("/cart", addToCart);
-cartRouter.get("/cart", getCart);
-cartRouter.put("/cart/:productId", updateCartItem);
-cartRouter.delete("/cart/:productId", removeCartItem);
+// All cart routes require authentication
+router.use(requireSignin);
 
-export default cartRouter;
+router.post("/cart", addToCart);
+router.get("/cart", getCart);
+router.put("/cart/:productId", updateCartItem);
+router.delete("/cart/:productId", removeCartItem);
+
+export default router;

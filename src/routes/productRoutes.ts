@@ -6,12 +6,17 @@ import {
   updateProduct,
   deleteProduct,
 } from "../controllers/productController";
+import { requireSignin, checkAdmin } from "../middleware/authenticationFunction";
 
-const productRouter = express.Router();
-productRouter.post("/products", saveProduct);
-productRouter.get("/products", getProducts);
-productRouter.get("/products/:id", getProductById);
-productRouter.put("/products/:id", updateProduct);
-productRouter.delete("/products/:id", deleteProduct);
+const router = express.Router();
 
-export default productRouter;
+// Public routes (no authentication required)
+router.get("/products", getProducts);
+router.get("/products/:id", getProductById);
+
+// Admin only routes
+router.post("/products", requireSignin, checkAdmin, saveProduct);
+router.put("/products/:id", requireSignin, checkAdmin, updateProduct);
+router.delete("/products/:id", requireSignin, checkAdmin, deleteProduct);
+
+export default router;

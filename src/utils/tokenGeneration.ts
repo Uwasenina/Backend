@@ -11,7 +11,8 @@ export const generateToken = (user: IUser): string => {
     } 
     return jwt.sign(
         { 
-            _id: user._id, 
+            _id: String(user._id), 
+            fullName: user.fullName,
             email: user.email, 
             userRole: user.userRole }, 
             jwtSecret, 

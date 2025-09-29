@@ -5,12 +5,16 @@ import {
   getOrderById,
   cancelOrder,
 } from "../controllers/orderController";
+import { requireSignin } from "../middleware/authenticationFunction";
 
-const orderRouter = express.Router();
+const router = express.Router();
 
-orderRouter.post("/orders", placeOrder);
-orderRouter.get("/orders", getOrders);
-orderRouter.get("/orders/:id", getOrderById);
-orderRouter.delete("/orders/:id", cancelOrder);
+// All order routes require authentication
+router.use(requireSignin);
 
-export default orderRouter;
+router.post("/orders", placeOrder);
+router.get("/orders", getOrders);
+router.get("/orders/:id", getOrderById);
+router.delete("/orders/:id", cancelOrder);
+
+export default router;

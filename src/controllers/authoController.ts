@@ -36,39 +36,41 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({ message: "Error registering user", error });
   }
 };
+
 export const login = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, password } = req.body;
-
-    // 1. Check if user exists
     const existingUser = await User.findOne({ email });
     if (!existingUser) {
+      console.log("❌ No user with that email.");
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    // 2. Validate password
     const isPasswordValid = await bcrypt.compare(password, existingUser.password);
+    console.log("🔑 Password match:", isPasswordValid); // 👈 log comparison
+
     if (!isPasswordValid) {
+      console.log("❌ Incorrect password.");
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    // 3. Generate JWT token
     const token = generateToken(existingUser);
     existingUser.accessToken = token;
     await existingUser.save();
 
-    // 4. Send response
     return res.status(200).json({
-      message: "Login successful",
+      message: "Login successful!",
       user: {
         id: existingUser._id,
         fullName: existingUser.fullName,
         email: existingUser.email,
         userRole: existingUser.userRole,
-        accessToken: existingUser.accessToken,
+        token: token,
       },
     });
   } catch (error) {
+    console.error("💥 Login error:", error);
     return res.status(500).json({ message: "Error logging in", error });
   }
 };
+
