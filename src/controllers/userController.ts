@@ -7,7 +7,7 @@ import bcrypt from "bcryptjs";
 export const signin = async (req: Request, res: Response, next: NextFunction) => {
     try {
         console.log(req.body);
-        const { email, password, fullName,confirmpassword, userRole}= req.body;
+        const { email, password, fullName, userRole}= req.body;
 
 
         const existingUser = await User.findOne({ email });
