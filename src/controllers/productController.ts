@@ -1,22 +1,35 @@
-import { Request, Response } from "express";
 import Product from "../model/productModel";
-export const saveProduct = async (req: Request, res: Response) => {
-  console.log(req.body);
-  try {
-    const { name, price, description, imageUrl, category } = req.body;
-    const newProduct = await Product.create({
-      name: name,
-      price,
-      description,
-      imageUrl,
-      category,
-    });
-    return res.status(201).json({newProduct});
-  } catch (error) { 
-    console.error("Error saving product:", error);
-    return res.status(500).json({ error: "Internal server error." });
-  }
-};
+import { Request, Response } from "express";
+import cloudinary from "../utils/Cloudhandle";
+export const createProduct = async (req: Request, res: Response) => {
+    try {
+        const { prodName, prodDesc, prodPrice, ProdCat ,productimage} = req.body;
+
+  
+    
+        if(!req.file){
+            return res.status(400).json({message:"No image uploaded"})
+        }
+        const result=await cloudinary.uploader.upload(req.file.path,{
+            folder:"products"
+        });
+        const imageUrl=result.secure_url;
+        // Create new product
+        const newProduct = new Product({
+            prodName,
+            prodDesc,
+            prodPrice,
+            ProdCat,
+            productimage:imageUrl
+        });
+        const savedProduct = await newProduct.save();
+        res.status(201).json({ message: 'Product created successfully', product: savedProduct });
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Server Error', error });
+    }
+}
+
 
 
 export const getProducts = async (req: Request, res: Response) => {

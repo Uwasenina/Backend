@@ -6,6 +6,8 @@ import 'dotenv/config';
 import dotenv from "dotenv";
 
 
+import swaggerUi from "swagger-ui-express";
+import swaggerDocument from "./doc/swagger";
 
 // Routers
 import productRouter from "./routes/productRoutes";
@@ -34,6 +36,8 @@ const db_name=process.env.DB_NAME
 app.use(express.json());
 app.use(cors());
 
+//swagger
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use("/api/contact", contactRouter); // /api/contact/send-email
 
